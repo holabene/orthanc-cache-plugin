@@ -1,0 +1,12 @@
+services:
+  orthanc:
+    build: .
+    ports:
+      - "8042:8042"
+    environment:
+      ORTHANC__NAME: "orthanc-cache-plugin"
+
+      VERBOSE_ENABLED: "true"
+      VERBOSE_STARTUP: "true"
+      ORTHANC__PYTHON_SCRIPT: "/orthanc-cache/server.py"
+      ORTHANC__PYTHON_VERBOSE: "true"
