@@ -3,6 +3,8 @@ services:
     build: .
     ports:
       - "8042:8042"
+    volumes:
+      - ./orthanc-cache:/orthanc-cache
     environment:
       ORTHANC__NAME: "orthanc-cache-plugin"
 
