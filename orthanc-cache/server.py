@@ -1,3 +1,5 @@
+import urllib.parse
+
 import orthanc
 import re
 from datetime import datetime
@@ -19,12 +21,8 @@ def cached_response(output, uri, **request):
 
     orthanc.LogInfo(f'Cached response for {uri} from the orthanc-cache-plugin')
 
-    # Parse uri
-    path = re.match('/(patients|studies|series|instances)/([-a-z0-9]+)', uri)
-    level = path[1]
-    uuid = path[2]
-
     # Check last update
+    level, uuid = request['groups']
     meta = 'ReceptionDate' if level == 'instances' else 'LastUpdate'
     last_update = orthanc.RestApiGet(f'/{level}/{uuid}/metadata/{meta}').decode('utf-8')
 
@@ -35,7 +33,8 @@ def cached_response(output, uri, **request):
     output.SetHttpHeader('Last-Modified', last_modified)
 
     # Passthrough
-    output.AnswerBuffer(orthanc.RestApiGet(uri), 'application/json')
+    querystring = urllib.parse.urlencode(request['get'])
+    output.AnswerBuffer(orthanc.RestApiGet(f'{uri}?{querystring}'), 'application/json')
 
 
 orthanc.RegisterRestCallback('/(patients|studies|series|instances)/([-a-z0-9]+).*', cached_response)
