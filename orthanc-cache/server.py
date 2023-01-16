@@ -25,8 +25,10 @@ def cached_response(output, uri, **request):
     uuid = path[2]
 
     # Check last update
-    # TODO: check timezone
-    last_update = orthanc.RestApiGet(f'/{level}/{uuid}/metadata/LastUpdate').decode('utf-8')
+    meta = 'ReceptionDate' if level == 'instances' else 'LastUpdate'
+    last_update = orthanc.RestApiGet(f'/{level}/{uuid}/metadata/{meta}').decode('utf-8')
+
+    # TODO: ensure correct timezone
     last_modified = datetime.strptime(last_update, '%Y%m%dT%H%M%S').strftime('%a, %d %b %Y %H:%M:%S')
 
     # Add cache control
@@ -36,4 +38,4 @@ def cached_response(output, uri, **request):
     output.AnswerBuffer(orthanc.RestApiGet(uri), 'application/json')
 
 
-orthanc.RegisterRestCallback('/(patients|studies|series|instances)/([-a-z0-9]+)', cached_response)
+orthanc.RegisterRestCallback('/(patients|studies|series|instances)/([-a-z0-9]+).*', cached_response)
