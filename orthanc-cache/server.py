@@ -34,11 +34,11 @@ def cached_response(output, uri, **request):
 
     # Calculate ETag
     # TODO: optimize in order to not make Rest API call
-    etag = hashlib.md5(response).hexdigest()
+    e_tag = hashlib.md5(response).hexdigest()
 
     # Add cache control
     output.SetHttpHeader('Last-Modified', last_modified)
-    output.SetHttpHeader('ETag', etag)
+    output.SetHttpHeader('ETag', e_tag)
 
     # Passthrough
     output.AnswerBuffer(response, 'application/json')
