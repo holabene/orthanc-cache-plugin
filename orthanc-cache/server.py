@@ -1,7 +1,6 @@
+import hashlib
 import urllib.parse
-
 import orthanc
-import re
 from datetime import datetime
 
 
@@ -29,12 +28,20 @@ def cached_response(output, uri, **request):
     # TODO: ensure correct timezone
     last_modified = datetime.strptime(last_update, '%Y%m%dT%H%M%S').strftime('%a, %d %b %Y %H:%M:%S')
 
+    # Get API response
+    querystring = urllib.parse.urlencode(request['get'])
+    response = orthanc.RestApiGet(f'{uri}?{querystring}')
+
+    # Calculate ETag
+    # TODO: optimize in order to not make Rest API call
+    etag = hashlib.md5(response).hexdigest()
+
     # Add cache control
     output.SetHttpHeader('Last-Modified', last_modified)
+    output.SetHttpHeader('ETag', etag)
 
     # Passthrough
-    querystring = urllib.parse.urlencode(request['get'])
-    output.AnswerBuffer(orthanc.RestApiGet(f'{uri}?{querystring}'), 'application/json')
+    output.AnswerBuffer(response, 'application/json')
 
 
 orthanc.RegisterRestCallback('/(patients|studies|series|instances)/([-a-z0-9]+).*', cached_response)
