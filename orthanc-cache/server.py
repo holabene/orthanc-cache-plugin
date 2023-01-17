@@ -9,10 +9,7 @@ def cached_response(output, uri, **request):
     Methods available in output
     'AnswerBuffer', 'CompressAndAnswerJpegImage', 'CompressAndAnswerPngImage', 'Redirect', 'SendHttpStatus',
     'SendHttpStatusCode', 'SendMethodNotAllowed', 'SendMultipartItem', 'SendUnauthorized', 'SetCookie',
-    'SetHttpErrorDetails', 'SetHttpHeader', 'StartMultipartAnswer''AnswerBuffer',
-    'CompressAndAnswerJpegImage', 'CompressAndAnswerPngImage', 'Redirect',
-    'SendHttpStatus', 'SendHttpStatusCode', 'SendMethodNotAllowed', 'SendMultipartItem',
-    'SendUnauthorized', 'SetCookie', 'SetHttpErrorDetails', 'SetHttpHeader', 'StartMultipartAnswer'
+    'SetHttpErrorDetails', 'SetHttpHeader', 'StartMultipartAnswer'
     """
     if not request['method'] in ['GET', 'HEAD']:
         output.SendMethodNotAllowed(request['method'])
