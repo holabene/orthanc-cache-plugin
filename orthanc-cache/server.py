@@ -24,18 +24,19 @@ def cached_response(output, uri, **request):
     """
     if not request['method'] in ['GET', 'HEAD']:
         output.SendMethodNotAllowed(request['method'])
-        return
+        return None
 
     orthanc.LogInfo(f'Cached response for {uri} from the orthanc-cache-plugin')
 
     # Check last update
     level, uuid = request['groups']
     meta = 'ReceptionDate' if level == 'instances' else 'LastUpdate'
-    last_update = orthanc.RestApiGet(f'/{level}/{uuid}/metadata/{meta}').decode('utf-8')
+    last_update = datetime.strptime(
+        orthanc.RestApiGet(f'/{level}/{uuid}/metadata/{meta}').decode('utf-8') + timezone_offset(),
+        '%Y%m%dT%H%M%S%z'
+    )
 
-    last_modified = datetime\
-        .strptime(last_update, '%Y%m%dT%H%M%S')\
-        .strftime(f'%a, %d %b %Y %H:%M:%S {timezone_offset()}')
+    last_modified = last_update.strftime('%a, %d %b %Y %H:%M:%S %z')
 
     # Get API response
     querystring = urllib.parse.urlencode(request['get'])
@@ -49,6 +50,18 @@ def cached_response(output, uri, **request):
     output.SetHttpHeader('Date', datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S +0000'))
     output.SetHttpHeader('Last-Modified', last_modified)
     output.SetHttpHeader('ETag', e_tag)
+
+    # Validate request
+    if 'if-match' in request['headers']:
+        if request['headers']['if-match'] == e_tag:
+            output.SendHttpStatus(304)
+            return None
+    elif 'if-modified-since' in request['headers']:
+        modified_since = datetime.strptime(request['headers']['if-modified-since'], '%a, %d %b %Y %H:%M:%S %z')
+
+        if modified_since >= last_update:
+            output.SendHttpStatus(304)
+            return None
 
     # Passthrough
     output.AnswerBuffer(response, 'application/json')
