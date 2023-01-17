@@ -2,7 +2,10 @@ import orthanc
 import hashlib
 import urllib.parse
 from functools import lru_cache
-from datetime import datetime
+from datetime import datetime, timedelta
+from pytz import timezone
+
+RFC_822 = '%a, %d %b %Y %H:%M:%S GMT'
 
 
 # Get timezone offset
@@ -36,7 +39,7 @@ def cached_response(output, uri, **request):
         '%Y%m%dT%H%M%S%z'
     )
 
-    last_modified = last_update.strftime('%a, %d %b %Y %H:%M:%S %z')
+    last_modified = last_update.strftime(RFC_822)
 
     # Get API response
     querystring = urllib.parse.urlencode(request['get'])
@@ -47,9 +50,15 @@ def cached_response(output, uri, **request):
     e_tag = hashlib.md5(response).hexdigest()
 
     # Add cache control
-    output.SetHttpHeader('Date', datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S +0000'))
+    now = datetime.now(timezone('UTC'))
+    output.SetHttpHeader('Date', now.strftime(RFC_822))
     output.SetHttpHeader('Last-Modified', last_modified)
     output.SetHttpHeader('ETag', e_tag)
+
+    # Set expiry
+    ttl = 86400 * 7  # 7 days
+    output.SetHttpHeader('Cache-Control', f'max-age={ttl}, s-maxage={ttl}')
+    output.SetHttpHeader('Expires', (now + timedelta(seconds=ttl)).strftime(RFC_822))
 
     # Validate request
     if 'if-match' in request['headers']:
@@ -57,7 +66,7 @@ def cached_response(output, uri, **request):
             output.SendHttpStatus(304)
             return None
     elif 'if-modified-since' in request['headers']:
-        modified_since = datetime.strptime(request['headers']['if-modified-since'], '%a, %d %b %Y %H:%M:%S %z')
+        modified_since = datetime.strptime(request['headers']['if-modified-since'], RFC_822)
 
         if modified_since >= last_update:
             output.SendHttpStatus(304)
