@@ -49,14 +49,13 @@ def cached_response(output, uri, **request):
     # TODO: optimize in order to not make Rest API call
     e_tag = hashlib.md5(response).hexdigest()
 
-    # Add cache control
+    # Add cache control headers
     now = datetime.now(timezone('UTC'))
+    ttl = 86400 * 7  # 7 days
+
     output.SetHttpHeader('Date', now.strftime(RFC_822))
     output.SetHttpHeader('Last-Modified', last_modified)
     output.SetHttpHeader('ETag', e_tag)
-
-    # Set expiry
-    ttl = 86400 * 7  # 7 days
     output.SetHttpHeader('Cache-Control', f'max-age={ttl}, s-maxage={ttl}')
     output.SetHttpHeader('Expires', (now + timedelta(seconds=ttl)).strftime(RFC_822))
 
