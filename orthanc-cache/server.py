@@ -1,7 +1,18 @@
+import orthanc
 import hashlib
 import urllib.parse
-import orthanc
+from functools import lru_cache
 from datetime import datetime
+
+
+# Get timezone offset
+@lru_cache(maxsize=32)
+def timezone_offset():
+    utc = datetime.strptime(orthanc.RestApiGet('/tools/now').decode('utf-8'), '%Y%m%dT%H%M%S')
+    local = datetime.strptime(orthanc.RestApiGet('/tools/now-local').decode('utf-8'), '%Y%m%dT%H%M%S')
+    diff = divmod(int((local - utc).seconds), 3600)[0]
+
+    return '{:+03d}00'.format(diff)
 
 
 def cached_response(output, uri, **request):
@@ -22,8 +33,9 @@ def cached_response(output, uri, **request):
     meta = 'ReceptionDate' if level == 'instances' else 'LastUpdate'
     last_update = orthanc.RestApiGet(f'/{level}/{uuid}/metadata/{meta}').decode('utf-8')
 
-    # TODO: ensure correct timezone
-    last_modified = datetime.strptime(last_update, '%Y%m%dT%H%M%S').strftime('%a, %d %b %Y %H:%M:%S')
+    last_modified = datetime\
+        .strptime(last_update, '%Y%m%dT%H%M%S')\
+        .strftime(f'%a, %d %b %Y %H:%M:%S {timezone_offset()}')
 
     # Get API response
     querystring = urllib.parse.urlencode(request['get'])
