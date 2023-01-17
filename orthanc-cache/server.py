@@ -46,6 +46,7 @@ def cached_response(output, uri, **request):
     e_tag = hashlib.md5(response).hexdigest()
 
     # Add cache control
+    output.SetHttpHeader('Date', datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S +0000'))
     output.SetHttpHeader('Last-Modified', last_modified)
     output.SetHttpHeader('ETag', e_tag)
 
