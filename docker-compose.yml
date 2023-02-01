@@ -1,11 +1,11 @@
 services:
-  orthanc:
+  orthanc-cache:
     build: .
     ports:
       - "8042:8042"
     volumes:
       - ./orthanc-cache:/orthanc-cache
-      - ./.data:/var/lib/orthanc/db
+      - ./.data/orthanc-cache:/var/lib/orthanc/db
     environment:
       ORTHANC__NAME: "orthanc-cache-plugin"
 
@@ -13,3 +13,11 @@ services:
       VERBOSE_STARTUP: "true"
       ORTHANC__PYTHON_SCRIPT: "/orthanc-cache/server.py"
       ORTHANC__PYTHON_VERBOSE: "true"
+  orthanc:
+    image: osimis/orthanc
+    ports:
+      - "8043:8042"
+    volumes:
+      - ./.data/orthanc:/var/lib/orthanc/db
+    environment:
+      ORTHANC__NAME: "orthanc"
