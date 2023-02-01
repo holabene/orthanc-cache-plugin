@@ -35,7 +35,7 @@ export default function (data) {
 
         const data = res.json()
         const instanceId = data['ID']
-        console.log(`Uploaded study #${index + 1} ${instanceId}`)
+        console.log(`Uploaded instance #${index + 1} ${instanceId}`)
     })
 }
 
