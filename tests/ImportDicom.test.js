@@ -27,7 +27,7 @@ export function setup() {
 export default function (data) {
     // Import DICOM file
     files.forEach((file, index) => {
-        const res = session.post('/instances', file, { timeout: '15m' })
+        const res = session.post('/instances', file)
 
         check(res, {
             'status is 200': (r) => r.status === 200,
