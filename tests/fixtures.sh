@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Specify the output directory and base file name
-output_dir=.data/test
+output_dir=../.data/test
 base_file=image
 
 # Create the output directory
