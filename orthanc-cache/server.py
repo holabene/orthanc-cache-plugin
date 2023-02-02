@@ -116,8 +116,10 @@ def rest_callback(output, uri, **request):
         output.SendHttpStatusCode(200)
         return None
 
-    # return response
-    output.AnswerBuffer(response, 'application/json')
+    # send response with content type
+    # TODO: add support for other content types
+    content_type = request['headers']['accept'] if 'accept' in request['headers'] else 'application/json'
+    output.AnswerBuffer(response, content_type)
 
 
 orthanc.RegisterRestCallback('/(patients|studies|series|instances)/([-a-z0-9]+).*', rest_callback)
