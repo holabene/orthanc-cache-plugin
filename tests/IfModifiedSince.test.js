@@ -16,6 +16,8 @@ export function setup() {
     const res = session.get('/studies')
     studyIds = res.json()
 
+    const testData = []
+
     // make requests to /studies/{id}/shared-tags without If-Modified-Since header
     // to populate cache
     studyIds.forEach((studyId, index) => {
@@ -25,15 +27,17 @@ export function setup() {
             'status is 200': (r) => r.status === 200,
         })
 
+        testData.push({ studyId, lastModified: res.headers['Last-Modified'] })
+
         // sleep for 1 second
         sleep(1)
     })
 
-    return { studyIds }
+    return { testData }
 }
 
 export default function (data) {
-    data.studyIds.forEach((studyId, index) => {
+    data.testData.forEach(({ studyId, lastModified }, index) => {
         // Make call to shared-tags with If-Modified-Since header to current time
         const res = session.get(`/studies/${studyId}/shared-tags`, null, {
             headers: {
@@ -46,7 +50,7 @@ export default function (data) {
 
         // check status code is 304
         const checkOutput = check(res, {
-            'status is 304': (r) => r.status === 304,
+            'with if-modified-since current time, status is 304': (r) => r.status === 304,
         })
 
         // log status code
@@ -57,6 +61,34 @@ export default function (data) {
 
         if (!checkOutput) {
             fail(`Study #${index + 1} ${studyId} ${JSON.stringify(res.json())}`)
+        }
+
+        // sleep for 1 second
+        sleep(1)
+
+        // Make call to shared-tags with If-Modified-Since header to last modified time less 1 second
+        const res2 = session.get(`/studies/${studyId}/shared-tags`, null, {
+            headers: {
+                'If-Modified-Since': new Date(new Date(lastModified).getTime() - 1000).toUTCString(),
+            }
+        })
+
+        // log request headers
+        console.log(JSON.stringify(res2.request.headers))
+
+        // check status code is 200
+        const checkOutput2 = check(res2, {
+            'with if-modified-since before last modified, status is 200': (r) => r.status === 200,
+        })
+
+        // log status code
+        console.log(res2.status)
+
+        // log response headers
+        console.log(JSON.stringify(res2.headers))
+
+        if (!checkOutput2) {
+            fail(`Study #${index + 1} ${studyId} ${JSON.stringify(res2.json())}`)
         }
 
         // sleep for 1 second
