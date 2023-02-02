@@ -9,23 +9,38 @@ RFC_822 = '%a, %d %b %Y %H:%M:%S GMT'
 
 
 @lru_cache(maxsize=32)
-def timezone_offset():
+def orthanc_timezone_offset():
     """
-    Get Orthanc timezone offset
+    Get Orthanc timezone offset in seconds
     """
     utc = datetime.strptime(orthanc.RestApiGet('/tools/now').decode('utf-8'), '%Y%m%dT%H%M%S')
     local = datetime.strptime(orthanc.RestApiGet('/tools/now-local').decode('utf-8'), '%Y%m%dT%H%M%S')
-    diff = divmod(int((local - utc).seconds), 3600)[0]
-
-    return '{:+03d}00'.format(diff)
+    return divmod(int((local - utc).seconds), 3600)[0]
 
 
-def cached_response(uri):
+def resource_last_update(uuid, level):
+    """
+    Get last update date of a resource
+    """
+    meta = 'ReceptionDate' if level == 'instances' else 'LastUpdate'
+    meta_last_update = orthanc.RestApiGet(f'/{level}/{uuid}/metadata/{meta}').decode('utf-8')
+
+    # timezone offset in seconds
+    offset = orthanc_timezone_offset()
+
+    # parse last update in YYYYMMDDTHHMMSS, add offset, convert to UTC
+    last_update = datetime.strptime(meta_last_update, '%Y%m%dT%H%M%S') + timedelta(seconds=offset)
+    last_update = last_update.astimezone(timezone('UTC'))
+
+    return last_update
+
+
+def cached_api_response(uri):
     # TODO: add cache for slow endpoints
     return orthanc.RestApiGet(uri)
 
 
-def callback(output, uri, **request):
+def rest_callback(output, uri, **request):
     """
     Methods available in output
     'AnswerBuffer', 'CompressAndAnswerJpegImage', 'CompressAndAnswerPngImage', 'Redirect', 'SendHttpStatus',
@@ -41,11 +56,7 @@ def callback(output, uri, **request):
 
     # Check last update
     level, uuid = request['groups']
-    meta = 'ReceptionDate' if level == 'instances' else 'LastUpdate'
-    last_update = datetime.strptime(
-        orthanc.RestApiGet(f'/{level}/{uuid}/metadata/{meta}').decode('utf-8') + timezone_offset(),
-        '%Y%m%dT%H%M%S%z'
-    )
+    last_update = resource_last_update(uuid, level)
 
     # Validate cache against If-Modified-Since header
     if 'if-modified-since' in request['headers']:
@@ -69,7 +80,7 @@ def callback(output, uri, **request):
 
     # Get API response
     querystring = urllib.parse.urlencode(request['get'])
-    response = cached_response(f'{uri}?{querystring}')
+    response = cached_api_response(f'{uri}?{querystring}')
 
     # Calculate ETag
     e_tag = hashlib.md5(response).hexdigest()
@@ -97,4 +108,4 @@ def callback(output, uri, **request):
     output.AnswerBuffer(response, 'application/json')
 
 
-orthanc.RegisterRestCallback('/(patients|studies|series|instances)/([-a-z0-9]+).*', callback)
+orthanc.RegisterRestCallback('/(patients|studies|series|instances)/([-a-z0-9]+).*', rest_callback)
