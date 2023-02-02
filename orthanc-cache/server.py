@@ -80,9 +80,12 @@ def rest_callback(output, uri, **request):
 
     # Get API response
     querystring = urllib.parse.urlencode(request['get'])
-    response = cached_api_response(f'{uri}?{querystring}')
 
-    # Calculate ETag
+    # Build uri with querystring
+    api_uri = f'{uri}?{querystring}' if querystring else uri
+    response = cached_api_response(api_uri)
+
+    # Calculate Etag
     e_tag = hashlib.md5(response).hexdigest()
 
     # Validate request against If-Match header
