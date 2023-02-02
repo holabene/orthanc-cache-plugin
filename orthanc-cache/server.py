@@ -49,10 +49,9 @@ def rest_callback(output, uri, **request):
     """
     # Validate request method
     if not request['method'] in ['GET', 'HEAD']:
-        output.SendMethodNotAllowed(request['method'])
+        # pass through
+        orthanc.LogInfo(f'Pass through {uri} from the orthanc-cache-plugin')
         return None
-
-    orthanc.LogInfo(f'Cached response for {uri} from the orthanc-cache-plugin')
 
     # Check last update
     level, uuid = request['groups']
@@ -94,6 +93,7 @@ def rest_callback(output, uri, **request):
             # log cache hit
             orthanc.LogInfo('Cache hit If-Match')
 
+            # send 304
             output.SendHttpStatusCode(304)
 
             return None
@@ -108,6 +108,15 @@ def rest_callback(output, uri, **request):
     output.SetHttpHeader('Cache-Control', f'max-age={ttl}, s-maxage={ttl}')
     output.SetHttpHeader('Expires', (now + timedelta(seconds=ttl)).strftime(RFC_822))
 
+    # log cache miss
+    orthanc.LogInfo('Cache miss')
+
+    # if request method is HEAD, return 200
+    if request['method'] == 'HEAD':
+        output.SendHttpStatusCode(200)
+        return None
+
+    # return response
     output.AnswerBuffer(response, 'application/json')
 
 
