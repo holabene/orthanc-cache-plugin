@@ -49,10 +49,22 @@ def callback(output, uri, **request):
 
     # Validate cache against If-Modified-Since header
     if 'if-modified-since' in request['headers']:
-        modified_since = datetime.strptime(request['headers']['if-modified-since'], RFC_822)
+        # parse If-Modified-Since header to datetime in UTC
+        modified_since = datetime.strptime(request['headers']['if-modified-since'], RFC_822).astimezone(timezone('UTC'))
+
+        # log modified since with timezone
+        orthanc.LogInfo(f'If-Modified-Since: {modified_since.strftime("%Y-%m-%d %H:%M:%S %z")}')
+
+        # log last update with timezone
+        orthanc.LogInfo(f'Last-Update: {last_update.strftime("%Y-%m-%d %H:%M:%S %z")}')
 
         if modified_since >= last_update:
-            output.SendHttpStatus(304)
+            # log cache hit
+            orthanc.LogInfo('Cache hit If-Modified-Since')
+
+            # send 304
+            output.SendHttpStatusCode(304)
+
             return None
 
     # Get API response
@@ -65,7 +77,8 @@ def callback(output, uri, **request):
     # Validate request against If-Match header
     if 'if-match' in request['headers']:
         if request['headers']['if-match'] == e_tag:
-            output.SendHttpStatus(304)
+            output.SendHttpStatusCode(304)
+
             return None
 
     # Build response with cache control headers
