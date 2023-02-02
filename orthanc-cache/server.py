@@ -4,6 +4,7 @@ import urllib.parse
 from functools import lru_cache
 from datetime import datetime, timedelta
 from pytz import timezone
+import diskcache as dc
 
 RFC_822 = '%a, %d %b %Y %H:%M:%S GMT'
 
@@ -36,8 +37,45 @@ def resource_last_update(uuid, level):
 
 
 def cached_api_response(uri):
-    # TODO: add cache for slow endpoints
-    return orthanc.RestApiGet(uri)
+    """
+    Get API response from cache
+    :param uri:
+    :return:
+    """
+
+    # Cache directory
+    cache_dir = '/var/lib/orthanc/cache'
+
+    # Cache size
+    cache_size = 1024 ** 3  # 1GB
+
+    # Cache expiration
+    cache_expiration = 86400 * 7  # 7 days
+
+    # Cache
+    cache = dc.Cache(cache_dir, size_limit=cache_size, eviction_policy='least-recently-used', expire=cache_expiration)
+
+    # Get response from cache
+    if uri in cache:
+        # log cache hit
+        orthanc.LogInfo('Cache hit [response]')
+
+        return cache[uri]
+
+    # log cache miss
+    orthanc.LogInfo('Cache miss [response]')
+
+    # Get response from API
+    response = orthanc.RestApiGet(uri)
+
+    # Add response to cache if not empty and not binary
+    if response and not response.startswith(b'\x00'):
+        cache[uri] = response
+    else:
+        # log cache miss
+        orthanc.LogInfo('Cache miss [binary]')
+
+    return response
 
 
 def rest_callback(output, uri, **request):
@@ -70,7 +108,7 @@ def rest_callback(output, uri, **request):
 
         if modified_since >= last_update:
             # log cache hit
-            orthanc.LogInfo('Cache hit If-Modified-Since')
+            orthanc.LogInfo('Cache hit [If-Modified-Since]')
 
             # send 304
             output.SendHttpStatusCode(304)
@@ -91,7 +129,7 @@ def rest_callback(output, uri, **request):
     if 'if-match' in request['headers']:
         if request['headers']['if-match'] == e_tag:
             # log cache hit
-            orthanc.LogInfo('Cache hit If-Match')
+            orthanc.LogInfo('Cache hit [If-Match]')
 
             # send 304
             output.SendHttpStatusCode(304)
@@ -109,7 +147,7 @@ def rest_callback(output, uri, **request):
     output.SetHttpHeader('Expires', (now + timedelta(seconds=ttl)).strftime(RFC_822))
 
     # log cache miss
-    orthanc.LogInfo('Cache miss')
+    orthanc.LogInfo('Cache miss [cache-control]')
 
     # if request method is HEAD, return 200
     if request['method'] == 'HEAD':
