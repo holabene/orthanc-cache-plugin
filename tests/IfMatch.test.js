@@ -25,11 +25,11 @@ export function setup() {
 
         const checkOutput = check(res, {
             'Status is 200': (r) => r.status === 200,
-            'ETag is not empty': (r) => r.headers['Etag'] !== '',
+            'Etag is not empty': (r) => r.headers['Etag'] !== '',
         })
 
         if (!checkOutput) {
-            fail('Did not get 200 or ETag is empty')
+            fail('Did not get 200 or Etag is empty')
         }
 
         testData.push({ studyId, eTag: res.headers['Etag'] })
