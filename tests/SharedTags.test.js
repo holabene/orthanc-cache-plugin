@@ -27,6 +27,16 @@ export default function (data) {
         check(res, {
             'status is 200': (r) => r.status === 200,
         })
+
+        // log study ID and shared tags
+        const data = res.json()
+        console.log(`Study #${index + 1} ${studyId} ${JSON.stringify(data)}`)
+
+        // log http headers
+        console.log(JSON.stringify(res.headers))
+
+        // sleep for 1 second
+        sleep(1)
     })
 }
 
