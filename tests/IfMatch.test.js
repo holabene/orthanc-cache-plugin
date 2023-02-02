@@ -53,19 +53,19 @@ export default function (data) {
         // log request headers
         console.log(JSON.stringify(res.request.headers))
 
-        // check status code is 304
-        const checkOutput = check(res, {
-            'with if-match, status is 304': (r) => r.status === 304,
-        })
-
         // log status code
         console.log(res.status)
 
         // log response headers
         console.log(JSON.stringify(res.headers))
 
+        // check status code is 304
+        const checkOutput = check(res, {
+            'With If-Match, status is 304': (r) => r.status === 304,
+        })
+
         if (!checkOutput) {
-            fail('status is not 304')
+            fail('Status is not 304')
         }
 
         // sleep for 1 second
@@ -77,18 +77,18 @@ export default function (data) {
         // log request headers
         console.log(JSON.stringify(res2.request.headers))
 
-        const checkOutput2 = check(res2, {
-            'without if-match, status is 200': (r) => r.status === 200,
-        })
-
         // log status code
         console.log(res2.status)
 
         // log response headers
         console.log(JSON.stringify(res2.headers))
 
+        const checkOutput2 = check(res2, {
+            'Without If-Match, status is 200': (r) => r.status === 200,
+        })
+
         if (!checkOutput2) {
-            fail('status is not 200')
+            fail('Status is not 200')
         }
 
         // sleep for 1 second

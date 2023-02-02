@@ -3,7 +3,7 @@ import { Httpx } from 'https://jslib.k6.io/httpx/0.0.1/index.js'
 
 export let options = {
     vus: 100,
-    duration: '3s',
+    duration: '10s',
 }
 
 let studyIds = []
@@ -23,10 +23,14 @@ export function setup() {
     studyIds.forEach((studyId, index) => {
         const res = session.get(`/studies/${studyId}/shared-tags`)
 
-        check(res, {
+        const checkOutput = check(res, {
             'Status is 200': (r) => r.status === 200,
             'Last-Modified is not empty': (r) => r.headers['Last-Modified'] !== '',
         })
+
+        if (!checkOutput) {
+            fail('Did not get 200 or Last-Modified is empty')
+        }
 
         testData.push({ studyId, lastModified: res.headers['Last-Modified'] })
 
@@ -49,20 +53,20 @@ export default function (data) {
         // log request headers
         console.log(JSON.stringify(res.request.headers))
 
-        // check status code is 304
-        const checkOutput = check(res, {
-            'With if-modified-since current time, status is 304': (r) => r.status === 304,
-        })
-
-        if (!checkOutput) {
-            fail(`Study #${index + 1} ${studyId} ${JSON.stringify(res.json())}`)
-        }
-
         // log status code
         console.log(res.status)
 
         // log response headers
         console.log(JSON.stringify(res.headers))
+
+        // check status code is 304
+        const checkOutput = check(res, {
+            'With If-Modified-Since to current time, status is 304': (r) => r.status === 304,
+        })
+
+        if (!checkOutput) {
+            fail(`Study #${index + 1} ${studyId} ${JSON.stringify(res.json())}`)
+        }
 
         // sleep for 1 second
         sleep(1)
@@ -77,20 +81,20 @@ export default function (data) {
         // log request headers
         console.log(JSON.stringify(res2.request.headers))
 
-        // check status code is 200
-        const checkOutput2 = check(res2, {
-            'With if-modified-since before last modified, status is 200': (r) => r.status === 200,
-        })
-
-        if (!checkOutput2) {
-            fail(`Study #${index + 1} ${studyId} ${JSON.stringify(res2.json())}`)
-        }
-
         // log status code
         console.log(res2.status)
 
         // log response headers
         console.log(JSON.stringify(res2.headers))
+
+        // check status code is 200
+        const checkOutput2 = check(res2, {
+            'With If-Modified-Since before last modified date, status is 200': (r) => r.status === 200,
+        })
+
+        if (!checkOutput2) {
+            fail('Status is not 200')
+        }
 
         // sleep for 1 second
         sleep(1)
