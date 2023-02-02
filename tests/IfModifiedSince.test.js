@@ -24,7 +24,8 @@ export function setup() {
         const res = session.get(`/studies/${studyId}/shared-tags`)
 
         check(res, {
-            'status is 200': (r) => r.status === 200,
+            'Status is 200': (r) => r.status === 200,
+            'Last-Modified is not empty': (r) => r.headers['Last-Modified'] !== '',
         })
 
         testData.push({ studyId, lastModified: res.headers['Last-Modified'] })
@@ -50,18 +51,18 @@ export default function (data) {
 
         // check status code is 304
         const checkOutput = check(res, {
-            'with if-modified-since current time, status is 304': (r) => r.status === 304,
+            'With if-modified-since current time, status is 304': (r) => r.status === 304,
         })
+
+        if (!checkOutput) {
+            fail(`Study #${index + 1} ${studyId} ${JSON.stringify(res.json())}`)
+        }
 
         // log status code
         console.log(res.status)
 
         // log response headers
         console.log(JSON.stringify(res.headers))
-
-        if (!checkOutput) {
-            fail(`Study #${index + 1} ${studyId} ${JSON.stringify(res.json())}`)
-        }
 
         // sleep for 1 second
         sleep(1)
@@ -78,18 +79,18 @@ export default function (data) {
 
         // check status code is 200
         const checkOutput2 = check(res2, {
-            'with if-modified-since before last modified, status is 200': (r) => r.status === 200,
+            'With if-modified-since before last modified, status is 200': (r) => r.status === 200,
         })
+
+        if (!checkOutput2) {
+            fail(`Study #${index + 1} ${studyId} ${JSON.stringify(res2.json())}`)
+        }
 
         // log status code
         console.log(res2.status)
 
         // log response headers
         console.log(JSON.stringify(res2.headers))
-
-        if (!checkOutput2) {
-            fail(`Study #${index + 1} ${studyId} ${JSON.stringify(res2.json())}`)
-        }
 
         // sleep for 1 second
         sleep(1)

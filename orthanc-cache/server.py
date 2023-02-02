@@ -77,6 +77,9 @@ def callback(output, uri, **request):
     # Validate request against If-Match header
     if 'if-match' in request['headers']:
         if request['headers']['if-match'] == e_tag:
+            # log cache hit
+            orthanc.LogInfo('Cache hit If-Match')
+
             output.SendHttpStatusCode(304)
 
             return None
@@ -87,7 +90,7 @@ def callback(output, uri, **request):
 
     output.SetHttpHeader('Date', now.strftime(RFC_822))
     output.SetHttpHeader('Last-Modified', last_update.strftime(RFC_822))
-    output.SetHttpHeader('ETag', e_tag)
+    output.SetHttpHeader('Etag', e_tag)
     output.SetHttpHeader('Cache-Control', f'max-age={ttl}, s-maxage={ttl}')
     output.SetHttpHeader('Expires', (now + timedelta(seconds=ttl)).strftime(RFC_822))
 
