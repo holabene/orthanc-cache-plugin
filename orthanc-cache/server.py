@@ -1,3 +1,4 @@
+import json
 import orthanc
 import hashlib
 import urllib.parse
@@ -78,6 +79,42 @@ def cached_api_response(uri):
     return response
 
 
+def detect_content_type(response):
+    """
+    Detect content type from response
+    :param response:
+    :return:
+    """
+    # detect if supported binary response
+    if response.startswith(b'\x89PNG'):
+        return 'image/png'
+    elif response.startswith(b'\xff\xd8\xff'):
+        return 'image/jpeg'
+    elif response.startswith(b'\x1f\x8b\x08'):
+        return 'application/gzip'
+    elif response.startswith(b'\x42\x5a\x68'):
+        return 'application/x-bzip2'
+    elif response.startswith(b'\x50\x4b\x03\x04'):
+        return 'application/zip'
+
+    # detect if text response
+    try:
+        response.decode('utf-8')
+
+        # detect if json response
+        try:
+            json.loads(response)
+            return 'application/json'
+        except json.JSONDecodeError:
+            pass
+
+        return 'text/plain'
+    except UnicodeDecodeError:
+        pass
+
+    return 'application/octet-stream'
+
+
 def rest_callback(output, uri, **request):
     """
     Methods available in output
@@ -155,9 +192,7 @@ def rest_callback(output, uri, **request):
         return None
 
     # send response with content type
-    # TODO: add support for other content types
-    content_type = request['headers']['accept'] if 'accept' in request['headers'] else 'application/json'
-    output.AnswerBuffer(response, content_type)
+    output.AnswerBuffer(response, detect_content_type(response))
 
 
 orthanc.RegisterRestCallback('/(patients|studies|series|instances)/([-a-z0-9]+).*', rest_callback)
