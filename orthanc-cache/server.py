@@ -122,14 +122,25 @@ def rest_callback(output, uri, **request):
     'SendHttpStatusCode', 'SendMethodNotAllowed', 'SendMultipartItem', 'SendUnauthorized', 'SetCookie',
     'SetHttpErrorDetails', 'SetHttpHeader', 'StartMultipartAnswer'
     """
+    # Build uri with querystring
+    querystring = urllib.parse.urlencode(request['get']) if 'get' in request else ''
+    api_uri = f'{uri}?{querystring}' if querystring else uri
+
     # Validate request method
     if not request['method'] in ['GET', 'HEAD']:
-        # pass through
-        orthanc.LogInfo(f'Pass through {uri} from the orthanc-cache-plugin')
+        output.SendMethodNotAllowed()
         return None
 
     # Check last update
-    level, uuid = request['groups']
+
+    # if request['groups'] is a tuple of 2 elements
+    if len(request['groups']) == 2:
+        level, uuid = request['groups']
+    # if request['groups'] is a tuple of 1 element
+    else:
+        level = "instances"
+        uuid = request['groups'][0]
+
     last_update = resource_last_update(uuid, level)
 
     # Validate cache against If-Modified-Since header
@@ -153,10 +164,6 @@ def rest_callback(output, uri, **request):
             return None
 
     # Get API response
-    querystring = urllib.parse.urlencode(request['get'])
-
-    # Build uri with querystring
-    api_uri = f'{uri}?{querystring}' if querystring else uri
     response = cached_api_response(api_uri)
 
     # Calculate Etag
@@ -195,4 +202,11 @@ def rest_callback(output, uri, **request):
     output.AnswerBuffer(response, detect_content_type(response))
 
 
-orthanc.RegisterRestCallback('/(patients|studies|series|instances)/([-a-z0-9]+).*', rest_callback)
+orthanc.RegisterRestCallback('/(studies|series)/([-a-z0-9]+)/instances-tags', rest_callback)
+orthanc.RegisterRestCallback('/(studies|series)/([-a-z0-9]+)/shared-tags', rest_callback)
+orthanc.RegisterRestCallback('/(studies|series)/([-a-z0-9]+)/attachments', rest_callback)
+orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/file', rest_callback)
+orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/header', rest_callback)
+orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/preview', rest_callback)
+orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/pdf', rest_callback)
+orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/simplified-tags', rest_callback)
