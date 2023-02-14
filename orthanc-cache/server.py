@@ -59,12 +59,12 @@ def cached_api_response(uri):
     # Get response from cache
     if uri in cache:
         # log cache hit
-        orthanc.LogInfo('Cache hit [response]')
+        orthanc.LogInfo(f'Cache hit [response] {uri}')
 
         return cache[uri]
 
     # log cache miss
-    orthanc.LogInfo('Cache miss [response]')
+    orthanc.LogInfo(f'Cache miss [response] {uri}')
 
     # Get response from API
     response = orthanc.RestApiGet(uri)
@@ -74,7 +74,7 @@ def cached_api_response(uri):
         cache[uri] = response
     else:
         # log cache miss
-        orthanc.LogInfo('Cache miss [binary]')
+        orthanc.LogInfo(f'Cache miss [response:binary] {uri}')
 
     return response
 
@@ -113,6 +113,46 @@ def detect_content_type(response):
         pass
 
     return 'application/octet-stream'
+
+
+def on_change_callback(change_type, level, uuid):
+    """
+    Warm up cache when a new study is added
+    """
+    path = {0: 'patients', 1: 'studies', 2: 'series', 3: 'instances'}[level] if level < 4 else None
+
+    orthanc.LogInfo(f'Change detected: {change_type} {level} {uuid}')
+
+    # react on stable study/series change type
+    if change_type in [orthanc.ChangeType.STABLE_STUDY, orthanc.ChangeType.STABLE_SERIES]:
+        # warm up cache for instances-tags
+        orthanc.LogInfo(f'Warming up cache for /{path}/{uuid}/instances-tags')
+        cached_api_response(f'/{path}/{uuid}/instances-tags')
+        cached_api_response(f'/{path}/{uuid}/instances-tags?short')
+        cached_api_response(f'/{path}/{uuid}/instances-tags?simplify')
+
+        # warm up cache for shared-tags
+        orthanc.LogInfo(f'Warming up cache for /{path}/{uuid}/shared-tags')
+        cached_api_response(f'/{path}/{uuid}/shared-tags')
+        cached_api_response(f'/{path}/{uuid}/shared-tags?short')
+        cached_api_response(f'/{path}/{uuid}/shared-tags?simplify')
+
+        # warm up cache for attachments
+        orthanc.LogInfo(f'Warming up cache for /{path}/{uuid}/attachments')
+        cached_api_response(f'/{path}/{uuid}/attachments')
+        cached_api_response(f'/{path}/{uuid}/attachments?full')
+
+    # react on stored instance change type
+    elif change_type == orthanc.ChangeType.NEW_INSTANCE:
+        # warm up cache for tags
+        orthanc.LogInfo(f'Warming up cache for /{path}/{uuid}/tags')
+        cached_api_response(f'/{path}/{uuid}/tags')
+        cached_api_response(f'/{path}/{uuid}/tags?short')
+        cached_api_response(f'/{path}/{uuid}/tags?simplify')
+
+        # warm up cache for simplified-tags
+        orthanc.LogInfo(f'Warming up cache for /{path}/{uuid}/simplified-tags')
+        cached_api_response(f'/{path}/{uuid}/simplified-tags')
 
 
 def rest_callback(output, uri, **request):
@@ -156,7 +196,7 @@ def rest_callback(output, uri, **request):
 
         if modified_since >= last_update:
             # log cache hit
-            orthanc.LogInfo('Cache hit [If-Modified-Since]')
+            orthanc.LogInfo(f'Cache hit [If-Modified-Since] {api_uri}')
 
             # send 304
             output.SendHttpStatusCode(304)
@@ -173,7 +213,7 @@ def rest_callback(output, uri, **request):
     if 'if-match' in request['headers']:
         if request['headers']['if-match'] == e_tag:
             # log cache hit
-            orthanc.LogInfo('Cache hit [If-Match]')
+            orthanc.LogInfo(f'Cache hit [If-Match] {api_uri}')
 
             # send 304
             output.SendHttpStatusCode(304)
@@ -191,7 +231,7 @@ def rest_callback(output, uri, **request):
     output.SetHttpHeader('Expires', (now + timedelta(seconds=ttl)).strftime(RFC_822))
 
     # log cache miss
-    orthanc.LogInfo('Cache miss [cache-control]')
+    orthanc.LogInfo(f'Cache miss [cache-control] {api_uri}')
 
     # if request method is HEAD, return 200
     if request['method'] == 'HEAD':
@@ -202,11 +242,14 @@ def rest_callback(output, uri, **request):
     output.AnswerBuffer(response, detect_content_type(response))
 
 
-orthanc.RegisterRestCallback('/(studies|series)/([-a-z0-9]+)/instances-tags', rest_callback)
-orthanc.RegisterRestCallback('/(studies|series)/([-a-z0-9]+)/shared-tags', rest_callback)
-orthanc.RegisterRestCallback('/(studies|series)/([-a-z0-9]+)/attachments', rest_callback)
+orthanc.RegisterRestCallback('/(patients|studies|series)/([-a-z0-9]+)/instances-tags', rest_callback)
+orthanc.RegisterRestCallback('/(patients|studies|series)/([-a-z0-9]+)/shared-tags', rest_callback)
+orthanc.RegisterRestCallback('/(patients|studies|series)/([-a-z0-9]+)/attachments', rest_callback)
 orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/file', rest_callback)
 orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/header', rest_callback)
 orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/preview', rest_callback)
 orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/pdf', rest_callback)
+orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/tags', rest_callback)
 orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/simplified-tags', rest_callback)
+
+orthanc.RegisterOnChangeCallback(on_change_callback)
