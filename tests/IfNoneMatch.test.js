@@ -18,7 +18,7 @@ export function setup() {
 
     const testData = []
 
-    // make requests to /studies/{id}/shared-tags without If-Match header
+    // make requests to /studies/{id}/shared-tags without If-None-Match header
     // to populate cache
     studyIds.forEach((studyId, index) => {
         const res = session.get(`/studies/${studyId}/shared-tags`)
@@ -43,10 +43,10 @@ export function setup() {
 
 export default function (data) {
     data.testData.forEach(({ studyId, eTag }, index) => {
-        // make call to shared-tags with if-match header
+        // make call to shared-tags with if-none-match header
         const res = session.get(`/studies/${studyId}/shared-tags`, null, {
             headers: {
-                'If-Match': eTag,
+                'If-None-Match': eTag,
             }
         })
 
@@ -61,7 +61,7 @@ export default function (data) {
 
         // check status code is 304
         const checkOutput = check(res, {
-            'With If-Match, status is 304': (r) => r.status === 304,
+            'With If-None-Match, status is 304': (r) => r.status === 304,
         })
 
         if (!checkOutput) {
@@ -71,7 +71,7 @@ export default function (data) {
         // sleep for 1 second
         sleep(1)
 
-        // make call to shared-tags without if-match header
+        // make call to shared-tags without if-none-match header
         const res2 = session.get(`/studies/${studyId}/shared-tags`)
 
         // log request headers
@@ -84,7 +84,7 @@ export default function (data) {
         console.log(JSON.stringify(res2.headers))
 
         const checkOutput2 = check(res2, {
-            'Without If-Match, status is 200': (r) => r.status === 200,
+            'Without If-None-Match, status is 200': (r) => r.status === 200,
         })
 
         if (!checkOutput2) {

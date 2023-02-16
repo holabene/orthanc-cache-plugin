@@ -209,11 +209,11 @@ def rest_callback(output, uri, **request):
     # Calculate Etag
     e_tag = hashlib.md5(response).hexdigest()
 
-    # Validate request against If-Match header
-    if 'if-match' in request['headers']:
-        if request['headers']['if-match'] == e_tag:
+    # Validate request against If-None-Match header
+    if 'if-none-match' in request['headers']:
+        if request['headers']['if-none-match'] == e_tag:
             # log cache hit
-            orthanc.LogInfo(f'Cache hit [If-Match] {api_uri}')
+            orthanc.LogInfo(f'Cache hit [If-None-Match] {api_uri}')
 
             # send 304
             output.SendHttpStatusCode(304)
