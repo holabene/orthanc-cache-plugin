@@ -37,10 +37,11 @@ def resource_last_update(uuid, level):
     return last_update
 
 
-def cached_api_response(uri):
+def cached_api_response(uri: str, version: str):
     """
     Get API response from cache
     :param uri:
+    :param version:
     :return:
     """
 
@@ -56,25 +57,29 @@ def cached_api_response(uri):
     # Cache
     cache = dc.Cache(cache_dir, size_limit=cache_size, eviction_policy='least-recently-used', expire=cache_expiration)
 
-    # Get response from cache
-    if uri in cache:
-        # log cache hit
-        orthanc.LogInfo(f'Cache hit [response] {uri}')
+    cache_key = f'{uri}#{version}'
 
-        return cache[uri]
+    # Get response from cache
+    if cache_key in cache:
+        # log cache hit
+        orthanc.LogInfo(f'Cache hit [response] {cache_key}')
+
+        return cache[cache_key]
 
     # log cache miss
-    orthanc.LogInfo(f'Cache miss [response] {uri}')
+    orthanc.LogInfo(f'Cache miss [response] {cache_key}')
+
+    # invalidate cache matching uri
+    for key in cache:
+        if key.startswith(uri):
+            del cache[key]
 
     # Get response from API
     response = orthanc.RestApiGet(uri)
 
     # Add response to cache if not empty and not binary
     if response and not response.startswith(b'\x00'):
-        cache[uri] = response
-    else:
-        # log cache miss
-        orthanc.LogInfo(f'Cache miss [response:binary] {uri}')
+        cache[cache_key] = response
 
     return response
 
@@ -213,7 +218,7 @@ def rest_callback(output, uri, **request):
             return None
 
     # Get API response
-    response = cached_api_response(api_uri)
+    response = cached_api_response(api_uri, last_update.strftime("%Y%m%d%H%M%S"))
 
     # Calculate Etag
     e_tag = hashlib.md5(response).hexdigest()
