@@ -128,36 +128,28 @@ def on_change_callback(change_type, level, uuid):
 
     orthanc.LogInfo(f'Change detected: {change_type} {level} {uuid}')
 
-    # react on stable study/series change type
-    if change_type in [orthanc.ChangeType.STABLE_STUDY, orthanc.ChangeType.STABLE_SERIES]:
+    # react on stable patient/study/series change type
+    if change_type in [orthanc.ChangeType.STABLE_PATIENT, orthanc.ChangeType.STABLE_STUDY, orthanc.ChangeType.STABLE_SERIES]:
+        # get last update date
+        last_update = resource_last_update(uuid, path)
+        version = last_update.strftime('%Y%m%dT%H%M%S')
+
         # warm up cache for instances-tags
         orthanc.LogInfo(f'Warming up cache for /{path}/{uuid}/instances-tags')
-        cached_api_response(f'/{path}/{uuid}/instances-tags')
-        cached_api_response(f'/{path}/{uuid}/instances-tags?short')
-        cached_api_response(f'/{path}/{uuid}/instances-tags?simplify')
+        cached_api_response(f'/{path}/{uuid}/instances-tags', version)
+        cached_api_response(f'/{path}/{uuid}/instances-tags?short', version)
+        cached_api_response(f'/{path}/{uuid}/instances-tags?simplify', version)
 
         # warm up cache for shared-tags
         orthanc.LogInfo(f'Warming up cache for /{path}/{uuid}/shared-tags')
-        cached_api_response(f'/{path}/{uuid}/shared-tags')
-        cached_api_response(f'/{path}/{uuid}/shared-tags?short')
-        cached_api_response(f'/{path}/{uuid}/shared-tags?simplify')
+        cached_api_response(f'/{path}/{uuid}/shared-tags', version)
+        cached_api_response(f'/{path}/{uuid}/shared-tags?short', version)
+        cached_api_response(f'/{path}/{uuid}/shared-tags?simplify', version)
 
         # warm up cache for attachments
         orthanc.LogInfo(f'Warming up cache for /{path}/{uuid}/attachments')
-        cached_api_response(f'/{path}/{uuid}/attachments')
-        cached_api_response(f'/{path}/{uuid}/attachments?full')
-
-    # react on stored instance change type
-    elif change_type == orthanc.ChangeType.NEW_INSTANCE:
-        # warm up cache for tags
-        orthanc.LogInfo(f'Warming up cache for /{path}/{uuid}/tags')
-        cached_api_response(f'/{path}/{uuid}/tags')
-        cached_api_response(f'/{path}/{uuid}/tags?short')
-        cached_api_response(f'/{path}/{uuid}/tags?simplify')
-
-        # warm up cache for simplified-tags
-        orthanc.LogInfo(f'Warming up cache for /{path}/{uuid}/simplified-tags')
-        cached_api_response(f'/{path}/{uuid}/simplified-tags')
+        cached_api_response(f'/{path}/{uuid}/attachments', version)
+        cached_api_response(f'/{path}/{uuid}/attachments?full', version)
 
 
 def rest_callback(output, uri, **request):
