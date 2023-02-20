@@ -36,8 +36,10 @@ cache expires. Also, if the client is behind a proxy, the proxy can cache the
 response and serve it to other clients. CDN's can also cache the response.
 
 Make sure to configure the CDN to always revalidate the cache with the server
-before serving the cached response. This plugin will return a 304 Not Modified
-response if the client has a valid cache.
+before serving the cached response and forward the http authentication headers
+to the server, in order to get the correct response.
+
+This plugin will return a 304 Not Modified response if the client has a valid cache.
 
 ## Server-side cache warmup
 
