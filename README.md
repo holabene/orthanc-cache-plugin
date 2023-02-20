@@ -15,7 +15,9 @@ Cache is done using the diskcache library, and the cache size is limited to 1GB,
 using the LRU eviction policy. Cache is versioned using resource's `LastUpdate`
 metadata.
 
-Binary responses are not cached.
+Responses with binary data are not cached on the server-side, for example
+`/instances/{id}/file` and `/instances/{id}/preview`, but the client-side
+caching will still work.
 
 ## Client-side caching
 
