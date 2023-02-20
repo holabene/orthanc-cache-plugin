@@ -35,8 +35,8 @@ This allows clients to cache the responses and only request new data when the
 cache expires. Also, if the client is behind a proxy, the proxy can cache the
 response and serve it to other clients. CDN's can also cache the response.
 
-Make sure to configure the CDN to always revalidate the cache with the server
-before serving the cached response and forward the http authentication headers
+Make sure to configure the proxy or CDN to always revalidate the cache with the server
+before serving the cached response and always forward the http authentication headers
 to the server, in order to get the correct response.
 
 This plugin will return a 304 Not Modified response if the client has a valid cache.
@@ -44,7 +44,7 @@ This plugin will return a 304 Not Modified response if the client has a valid ca
 ## Server-side cache warmup
 
 The plugin registers with the Orthanc event system and will warm the cache
-when a new instance is stored, and when a new study or series is stable.
+when a new patient or study or series is stable.
 
 At this point, the resource is safe to cache, so when the client requests the
 resource, it will be served from the cache.
