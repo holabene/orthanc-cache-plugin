@@ -9,7 +9,7 @@ HTTP cache control headers to the REST API
 The plugin will cache the responses to GET requests to the REST API. The cache 
 is stored on disk in a directory `/var/lib/orthanc/cache`. 
 
-Cache TTL is 7 days.
+Cache expiration is in 7 days since the cache was created.
 
 Cache is done using the diskcache library, and the cache size is limited to 1GB,
 using the LRU eviction policy. Cache is versioned using resource's `LastUpdate`
