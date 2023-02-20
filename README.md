@@ -33,9 +33,11 @@ Cache-Control: max-age=604800, s-maxage=604800, public
 Expires: Mon, 27 Feb 2023 15:00:00 GMT    
 ```
 
-This allows clients to cache the responses and only request new data when the
-cache expires. Also, if the client is behind a proxy, the proxy can cache the
-response and serve it to other clients. CDN's can also cache the response.
+This allows clients to cache the responses and use the cached response for
+subsequent requests to the same resource when the resource is not modified.
+
+If the client is behind a proxy, the proxy can cache the response and serve it to other
+clients. CDN's can also cache the response.
 
 Make sure to configure the proxy or CDN to always revalidate the cache with the server
 before serving the cached response and always forward the http authentication headers
