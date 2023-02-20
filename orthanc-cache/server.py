@@ -236,7 +236,7 @@ def rest_callback(output, uri, **request):
     output.SetHttpHeader('Date', now.strftime(RFC_822))
     output.SetHttpHeader('Last-Modified', last_update.strftime(RFC_822))
     output.SetHttpHeader('Etag', e_tag)
-    output.SetHttpHeader('Cache-Control', f'max-age={ttl}, s-maxage={ttl}')
+    output.SetHttpHeader('Cache-Control', f'max-age={ttl}, s-maxage={ttl}, public')
     output.SetHttpHeader('Expires', (now + timedelta(seconds=ttl)).strftime(RFC_822))
 
     # log cache miss
