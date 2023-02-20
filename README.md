@@ -26,7 +26,7 @@ The plugin will add HTTP cache control headers to the responses to GET requests.
 ```
 Date: Mon, 20 Feb 2023 15:00:00 GMT
 Last-Modified: Mon, 20 Feb 2023 14:00:00 GMT
-ETag: "2e31e40208063db2c9edccf2ec012753"
+ETag: 2e31e40208063db2c9edccf2ec012753
 Cache-Control: max-age=604800, s-maxage=604800, public
 Expires: Mon, 27 Feb 2023 15:00:00 GMT    
 ```
