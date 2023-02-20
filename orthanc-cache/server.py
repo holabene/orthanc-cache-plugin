@@ -181,7 +181,16 @@ def rest_callback(output, uri, **request):
         level = "instances"
         uuid = request['groups'][0]
 
-    last_update = resource_last_update(uuid, level)
+    # Get last update, if resource not found return 404
+    try:
+        last_update = resource_last_update(uuid, level)
+    except orthanc.OrthancException as e:
+        # if resource not found
+        if e.args[0] == orthanc.ErrorCode.UNKNOWN_RESOURCE:
+            output.SendHttpStatusCode(404)
+            return None
+        else:
+            raise e
 
     # Validate cache against If-Modified-Since header
     if 'if-modified-since' in request['headers']:
