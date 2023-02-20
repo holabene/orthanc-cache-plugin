@@ -251,11 +251,17 @@ def rest_callback(output, uri, **request):
 orthanc.RegisterRestCallback('/(patients|studies|series)/([-a-z0-9]+)/instances-tags', rest_callback)
 orthanc.RegisterRestCallback('/(patients|studies|series)/([-a-z0-9]+)/shared-tags', rest_callback)
 orthanc.RegisterRestCallback('/(patients|studies|series)/([-a-z0-9]+)/attachments', rest_callback)
+orthanc.RegisterRestCallback('/(patients|studies|series)/([-a-z0-9]+)/media', rest_callback)
+orthanc.RegisterRestCallback('/(patients|studies|series)/([-a-z0-9]+)/archive', rest_callback)
+
 orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/file', rest_callback)
 orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/header', rest_callback)
 orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/preview', rest_callback)
 orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/pdf', rest_callback)
 orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/tags', rest_callback)
 orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/simplified-tags', rest_callback)
+orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/raw', rest_callback)
+orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/frames', rest_callback)
+orthanc.RegisterRestCallback('/instances/([-a-z0-9]+)/frames/(.+)', rest_callback)
 
 orthanc.RegisterOnChangeCallback(on_change_callback)
