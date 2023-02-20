@@ -56,32 +56,32 @@ resource, it will be served from the cache.
 The following endpoints are cached:
 
 ```
-GET patients/{id}/instances-tags
-GET patients/{id}/shared-tags
-GET patients/{id}/attachments
-GET patients/{id}/media
 GET patients/{id}/archive
+GET patients/{id}/attachments
+GET patients/{id}/instances-tags
+GET patients/{id}/media
+GET patients/{id}/shared-tags
 
-GET studies/{id}/instances-tags
-GET studies/{id}/shared-tags
-GET studies/{id}/attachments
-GET studies/{id}/media
 GET studies/{id}/archive
+GET studies/{id}/attachments
+GET studies/{id}/instances-tags
+GET studies/{id}/media
+GET studies/{id}/shared-tags
 
-GET series/{id}/instances-tags
-GET series/{id}/shared-tags
-GET series/{id}/attachments
-GET series/{id}/media
 GET series/{id}/archive
+GET series/{id}/attachments
+GET series/{id}/instances-tags
+GET series/{id}/media
+GET series/{id}/shared-tags
 
 GET /instances/{id}/file
-GET /instances/{id}/preview
-GET /instances/{id}/tags
-GET /instances/{id}/simplified-tags
-GET /instances/{id}/metadata
-GET /instances/{id}/raw
 GET /instances/{id}/frames
 GET /instances/{id}/frames/{frame}/*
+GET /instances/{id}/metadata
+GET /instances/{id}/preview
+GET /instances/{id}/raw
+GET /instances/{id}/simplified-tags
+GET /instances/{id}/tags
 ```
 
 ## Orthanc module API
