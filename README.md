@@ -4,6 +4,8 @@ Orthanc Cache Plugin
 This is a python plugin for Orthanc to enable caching of responses and provide 
 HTTP cache control headers to the REST API
 
+**This is still a work in progress. Please use with caution. Contributions are welcome.**
+
 ## Server-side caching
 
 The plugin will cache the responses to GET requests to the REST API. The cache 
