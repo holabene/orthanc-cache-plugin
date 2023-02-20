@@ -1,6 +1,9 @@
 Orthanc Module API
 ==================
 
+Using the Python's inspect module, we can generate a list of all the functions and classes available in the Orthanc module.
+It is documented in the [Orthanc documentation](https://book.orthanc-server.com/plugins/python.html#inspecting-the-available-api).
+
 Output from the script
 
 ```
