@@ -8,6 +8,7 @@ from pytz import timezone
 import diskcache as dc
 
 RFC_822 = '%a, %d %b %Y %H:%M:%S GMT'
+ORTHANC_DATE = '%Y%m%dT%H%M%S'
 
 
 @lru_cache(maxsize=32)
@@ -16,8 +17,8 @@ def orthanc_timezone_offset() -> int:
     Get Orthanc timezone offset in seconds
     :return: timezone offset in seconds
     """
-    utc = datetime.strptime(orthanc.RestApiGet('/tools/now').decode('utf-8'), '%Y%m%dT%H%M%S')
-    local = datetime.strptime(orthanc.RestApiGet('/tools/now-local').decode('utf-8'), '%Y%m%dT%H%M%S')
+    utc = datetime.strptime(orthanc.RestApiGet('/tools/now').decode('utf-8'), ORTHANC_DATE)
+    local = datetime.strptime(orthanc.RestApiGet('/tools/now-local').decode('utf-8'), ORTHANC_DATE)
 
     return divmod(int((local - utc).seconds), 3600)[0]
 
@@ -35,8 +36,8 @@ def resource_last_update(uuid, level) -> datetime:
     # timezone offset in seconds
     offset = orthanc_timezone_offset()
 
-    # parse last update in YYYYMMDDTHHMMSS, add offset, convert to UTC
-    last_update = datetime.strptime(meta_last_update, '%Y%m%dT%H%M%S') + timedelta(seconds=offset)
+    # parse last update in ORTHANC_DATE format, add offset, convert to UTC
+    last_update = datetime.strptime(meta_last_update, ORTHANC_DATE) + timedelta(seconds=offset)
     last_update = last_update.astimezone(timezone('UTC'))
 
     return last_update
@@ -70,10 +71,10 @@ def cached_api_response(uri: str, version: str) -> bytes:
         orthanc.LogInfo(f'Cache hit [response] {cache_key}')
         return cache[cache_key]
 
-    # log cache miss
+    # Log cache miss
     orthanc.LogInfo(f'Cache miss [response] {cache_key}')
 
-    # invalidate cache matching uri
+    # Invalidate cache matching uri
     for key in cache:
         if key.startswith(uri):
             del cache[key]
@@ -139,7 +140,7 @@ def on_change_callback(change_type, level, uuid):
     if change_type in [orthanc.ChangeType.STABLE_PATIENT, orthanc.ChangeType.STABLE_STUDY, orthanc.ChangeType.STABLE_SERIES]:
         # get last update date
         last_update = resource_last_update(uuid, path)
-        version = last_update.strftime('%Y%m%dT%H%M%S')
+        version = last_update.strftime(ORTHANC_DATE)
 
         # warm up cache for instances-tags
         orthanc.LogInfo(f'Warming up cache for /{path}/{uuid}/instances-tags')
@@ -217,7 +218,7 @@ def rest_callback(output, uri, **request):
             return None
 
     # Get API response
-    response = cached_api_response(api_uri, last_update.strftime("%Y%m%d%H%M%S"))
+    response = cached_api_response(api_uri, last_update.strftime(ORTHANC_DATE))
 
     # Calculate Etag
     e_tag = hashlib.md5(response).hexdigest()
