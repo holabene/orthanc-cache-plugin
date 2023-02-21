@@ -53,6 +53,30 @@ when a new patient or study or series is stable.
 At this point, the resource is safe to cache, so when the client requests the
 resource, it will be served from the cache.
 
+## Installation
+
+There are python requirements for the plugin. Here is an example Dockerfile for a docker image
+with the plugin's requirements.
+
+```
+FROM osimis/orthanc
+
+RUN pip install pytz
+RUN pip install diskcache
+```
+
+To enable the plugin, add the following to the script that is configured as the
+Python startup script in Orthanc. See [example.py](example.py) in the root of this repository.
+
+```
+import sys
+sys.path.append('/usr/share/orthanc/plugins/')
+
+from orthanc_cache_plugin import enable_cache_plugin
+
+enable_cache_plugin()
+```
+
 ## Endpoints that are cached
 
 The following endpoints are cached:
