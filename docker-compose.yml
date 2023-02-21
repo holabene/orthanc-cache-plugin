@@ -4,14 +4,15 @@ services:
     ports:
       - "8042:8042"
     volumes:
-      - ./orthanc-cache:/orthanc-cache
-      - ./.data/orthanc-cache:/var/lib/orthanc/db
+      - ./orthanc_cache_plugin:/usr/share/orthanc/plugins/orthanc_cache_plugin
+      - ./example.py:/tmp/example.py
+      - ./.data/orthanc_cache_plugin:/var/lib/orthanc/db
     environment:
-      ORTHANC__NAME: "orthanc-cache-plugin"
+      ORTHANC__NAME: "Orthanc With Cache Plugin Enabled"
 
       VERBOSE_ENABLED: "true"
       VERBOSE_STARTUP: "true"
-      ORTHANC__PYTHON_SCRIPT: "/orthanc-cache/server.py"
+      ORTHANC__PYTHON_SCRIPT: "/tmp/example.py"
       ORTHANC__PYTHON_VERBOSE: "true"
       ORTHANC__STABLE_AGE: 3
   orthanc:
