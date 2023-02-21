@@ -11,18 +11,23 @@ RFC_822 = '%a, %d %b %Y %H:%M:%S GMT'
 
 
 @lru_cache(maxsize=32)
-def orthanc_timezone_offset():
+def orthanc_timezone_offset() -> int:
     """
     Get Orthanc timezone offset in seconds
+    :return: timezone offset in seconds
     """
     utc = datetime.strptime(orthanc.RestApiGet('/tools/now').decode('utf-8'), '%Y%m%dT%H%M%S')
     local = datetime.strptime(orthanc.RestApiGet('/tools/now-local').decode('utf-8'), '%Y%m%dT%H%M%S')
+
     return divmod(int((local - utc).seconds), 3600)[0]
 
 
-def resource_last_update(uuid, level):
+def resource_last_update(uuid, level) -> datetime:
     """
     Get last update date of a resource
+    :param uuid: resource uuid
+    :param level: 'patients', 'studies', 'series', 'instances'
+    :return: last update date
     """
     meta = 'ReceptionDate' if level == 'instances' else 'LastUpdate'
     meta_last_update = orthanc.RestApiGet(f'/{level}/{uuid}/metadata/{meta}').decode('utf-8')
@@ -37,12 +42,12 @@ def resource_last_update(uuid, level):
     return last_update
 
 
-def cached_api_response(uri: str, version: str):
+def cached_api_response(uri: str, version: str) -> bytes:
     """
     Get API response from cache
-    :param uri:
-    :param version:
-    :return:
+    :param uri: API uri
+    :param version: cache version
+    :return: API response
     """
 
     # Cache directory
@@ -63,7 +68,6 @@ def cached_api_response(uri: str, version: str):
     if cache_key in cache:
         # log cache hit
         orthanc.LogInfo(f'Cache hit [response] {cache_key}')
-
         return cache[cache_key]
 
     # log cache miss
@@ -84,11 +88,11 @@ def cached_api_response(uri: str, version: str):
     return response
 
 
-def detect_content_type(response):
+def detect_content_type(response) -> str:
     """
     Detect content type from response
     :param response:
-    :return:
+    :return: mime type
     """
     # detect if supported binary response
     if response.startswith(b'\x89PNG'):
@@ -123,6 +127,9 @@ def detect_content_type(response):
 def on_change_callback(change_type, level, uuid):
     """
     Warm up cache when a new study is added
+    :param change_type: change type
+    :param level: resource level
+    :param uuid: resource uuid
     """
     path = {0: 'patients', 1: 'studies', 2: 'series', 3: 'instances'}[level] if level < 4 else None
 
@@ -154,35 +161,36 @@ def on_change_callback(change_type, level, uuid):
 
 def rest_callback(output, uri, **request):
     """
-    Methods available in output
-    'AnswerBuffer', 'CompressAndAnswerJpegImage', 'CompressAndAnswerPngImage', 'Redirect', 'SendHttpStatus',
-    'SendHttpStatusCode', 'SendMethodNotAllowed', 'SendMultipartItem', 'SendUnauthorized', 'SetCookie',
-    'SetHttpErrorDetails', 'SetHttpHeader', 'StartMultipartAnswer'
+    REST callback
+    See Class RestOutput for more information in docs/orthanc-module-api.md
+    :param output: output object
+    :param uri: uri
+    :param request: request
     """
     # Build uri with querystring
     querystring = urllib.parse.urlencode(request['get']) if 'get' in request else ''
     api_uri = f'{uri}?{querystring}' if querystring else uri
 
     # Validate request method
+    # Only GET and HEAD are supported
     if not request['method'] in ['GET', 'HEAD']:
         output.SendMethodNotAllowed()
         return None
 
-    # Check last update
-
-    # if request['groups'] is a tuple of 2 elements
+    # If request['groups'] is a tuple of 2 elements
     if len(request['groups']) == 2:
         level, uuid = request['groups']
-    # if request['groups'] is a tuple of 1 element
+    # If request['groups'] is a tuple of 1 element
     else:
         level = "instances"
         uuid = request['groups'][0]
 
-    # Get last update, if resource not found return 404
+    # Get last update metadata from resource
+    # If resource not found, return 404
     try:
         last_update = resource_last_update(uuid, level)
     except orthanc.OrthancException as e:
-        # if resource not found
+        # If resource not found
         if e.args[0] == orthanc.ErrorCode.UNKNOWN_RESOURCE:
             output.SendHttpStatusCode(404)
             return None
@@ -206,7 +214,6 @@ def rest_callback(output, uri, **request):
 
             # send 304
             output.SendHttpStatusCode(304)
-
             return None
 
     # Get API response
@@ -223,7 +230,6 @@ def rest_callback(output, uri, **request):
 
             # send 304
             output.SendHttpStatusCode(304)
-
             return None
 
     # Build response with cache control headers
@@ -236,15 +242,15 @@ def rest_callback(output, uri, **request):
     output.SetHttpHeader('Cache-Control', f'max-age={ttl}, s-maxage={ttl}, public')
     output.SetHttpHeader('Expires', (now + timedelta(seconds=ttl)).strftime(RFC_822))
 
-    # log cache miss
+    # Log cache miss
     orthanc.LogInfo(f'Cache miss [cache-control] {api_uri}')
 
-    # if request method is HEAD, return 200
+    # If request method is HEAD, return 200
     if request['method'] == 'HEAD':
         output.SendHttpStatusCode(200)
         return None
 
-    # send response with content type
+    # Send response with content type
     output.AnswerBuffer(response, detect_content_type(response))
 
 
