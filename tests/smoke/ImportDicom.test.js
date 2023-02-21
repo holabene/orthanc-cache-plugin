@@ -12,7 +12,7 @@ export let options = {
 let files = []
 
 for (let i = 1; i <= 100; i++) {
-  let filePath = `../.data/test/image${i.toString().padStart(3, "0")}.dcm`;
+  let filePath = `../../.data/test/image${i.toString().padStart(3, "0")}.dcm`;
   files.push(open(filePath, 'b'));
 }
 

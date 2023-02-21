@@ -2,7 +2,8 @@ import { check, sleep } from 'k6'
 import { Httpx } from 'https://jslib.k6.io/httpx/0.0.1/index.js'
 
 export let options = {
-    vus: 100,
+    vus: 1,
+    iterations: 1,
     duration: '30s',
 }
 
