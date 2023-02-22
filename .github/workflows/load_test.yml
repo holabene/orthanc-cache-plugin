@@ -37,32 +37,26 @@ jobs:
 
       - name: Run ImportDicom.test.js
         run: |
-            k6 run --out json=/tmp/import-dicom-1.json /github/workspace/tests/smoke/ImportDicom.test.js http://localhost:8042
-            k6 run --out json=/tmp/import-dicom-2.json /github/workspace/tests/smoke/ImportDicom.test.js http://localhost:8043
-            k6 convert /tmp/import-dicom-1.json
-            k6 convert /tmp/import-dicom-2.json
+            k6 run tests/smoke/ImportDicom.test.js
+            k6 run tests/smoke/ImportDicom.test.js --env PORT=8043
 
       - name: Run IfModifiedSince.test.js
         run: |
-          k6 run --out json=/tmp/if-modified-since.json /github/workspace/tests/smoke/IfModifiedSince.test.js http://localhost:8042
-          k6 convert /tmp/if-modified-since.json
+          k6 run tests/smoke/IfModifiedSince.test.js
 
       - name: Run IfNoneMatch.test.js
         run: |
-          k6 run --out json=/tmp/if-none-match.json /github/workspace/tests/smoke/IfNoneMatch.test.js http://localhost:8042
-          k6 convert /tmp/if-none-match.json
+          k6 run tests/smoke/IfNoneMatch.test.js
 
       - name: Run ServerSideCaching.test.js
         run: |
-          k6 run --out json=/tmp/server-side-caching-1.json /github/workspace/tests/load/ServerSideCaching.test.js http://localhost:8042
-          k6 run --out json=/tmp/server-side-caching-2.json /github/workspace/tests/load/ServerSideCaching.test.js http://localhost:8043
-          k6 compare /tmp/server-side-caching-1.json /tmp/server-side-caching-2.json
+          k6 run tests/load/ServerSideCaching.test.js
+          k6 run tests/load/ServerSideCaching.test.js --env PORT=8043
 
       - name: Run ClientSideCaching tests
         run: |
-          k6 run --out json=/tmp/client-side-caching-1.json /github/workspace/tests/load/ClientSideCaching.test.js http://localhost:8042
-          k6 run --out json=/tmp/client-side-caching-2.json /github/workspace/tests/load/ClientSideCaching.test.js http://localhost:8043
-          k6 compare /tmp/client-side-caching-1.json /tmp/client-side-caching-2.json
+          k6 run tests/load/ClientSideCaching.test.js
+          k6 run tests/load/ClientSideCaching.test.js --env PORT=8043
 
       - name: Stop services
         run: docker-compose down
