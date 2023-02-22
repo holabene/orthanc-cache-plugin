@@ -9,12 +9,7 @@ export let options = {
     teardownTimeout: '5m',
 }
 
-let files = []
-
-for (let i = 1; i <= 100; i++) {
-  let filePath = `../../.data/test/image${i.toString().padStart(3, "0")}.dcm`;
-  files.push(open(filePath, 'b'));
-}
+let files = JSON.parse(open('../../.data/test/files.json')).map((file) => open(file, 'b'))
 
 const session = new Httpx({
     baseURL: 'http://orthanc:orthanc@localhost:8042',
