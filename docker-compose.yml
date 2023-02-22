@@ -6,7 +6,7 @@ services:
     volumes:
       - ./orthanc_cache_plugin:/usr/share/orthanc/plugins/orthanc_cache_plugin
       - ./example.py:/tmp/example.py
-      - ./.data/orthanc_cache_plugin:/var/lib/orthanc/db
+      - ./.data/orthanc-cache:/var/lib/orthanc/db
     environment:
       ORTHANC__NAME: "Orthanc With Cache Plugin Enabled"
 
