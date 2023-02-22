@@ -1,0 +1,52 @@
+name: Smoke tests
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dcmtk
+        run: sudo apt-get update && sudo apt-get install -y dcmtk
+
+      - name: Generate fixtures
+        run: ./tests/fixtures.sh 2 5
+
+      - name: Build orthanc-cache image
+        run: docker compose build orthanc-cache
+
+      - name: Start services
+        run: docker compose up -d
+
+      - name: Install k6
+        run: |
+          sudo mkdir -p /root/.gnupg
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+        shell: bash
+
+      - name: Run ImportDicom.test.js
+        run: |
+            k6 run tests/smoke/ImportDicom.test.js
+            k6 run tests/smoke/ImportDicom.test.js --env PORT=8043
+
+      - name: Run IfModifiedSince.test.js
+        run: |
+          k6 run tests/smoke/IfModifiedSince.test.js
+
+      - name: Run IfNoneMatch.test.js
+        run: |
+          k6 run tests/smoke/IfNoneMatch.test.js
+
+      - name: Stop services
+        run: docker-compose down
