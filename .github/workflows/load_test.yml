@@ -13,6 +13,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Install dcmtk
+        run: sudo apt-get update && sudo apt-get install -y dcmtk
+
       - name: Generate fixtures
         run: ./tests/fixtures.sh
 
