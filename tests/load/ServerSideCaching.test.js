@@ -7,12 +7,15 @@ export let options = {
 }
 
 let studyIds = []
+let port = __ENV.PORT || 8042
 
 const session = new Httpx({
-    baseURL: 'http://orthanc:orthanc@localhost:8042',
+    baseURL: `http://orthanc:orthanc@localhost:${port}`,
 })
 
 export function setup() {
+    console.log(`Testing using baseURL: ${session.baseURL}`)
+
     const res = session.get('/studies')
     studyIds = res.json()
 
