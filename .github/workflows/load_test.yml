@@ -3,7 +3,7 @@ name: k6 tests
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   test:
