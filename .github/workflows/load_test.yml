@@ -9,18 +9,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      orthanc1:
-        image: osimis/orthanc
-        ports:
-          - 8042:8042
-      orthanc2:
-        build:
-          context: .
-          dockerfile: Dockerfile.orthanc2
-        ports:
-          - 8043:8042
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
