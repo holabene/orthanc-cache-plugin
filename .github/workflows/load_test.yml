@@ -25,6 +25,13 @@ jobs:
       - name: Start services
         run: docker compose up -d
 
+      - name: Install k6
+        run: |
+          curl -sSOL https://dl.k6.io/release/k6-latest-linux-amd64.tar.gz
+          tar -xzf k6-latest-linux-amd64.tar.gz
+          sudo mv k6 /usr/local/bin/
+        shell: bash
+
       - name: Run ImportDicom.test.js
         run: |
             k6 run --out json=/tmp/import-dicom-1.json /github/workspace/tests/smoke/ImportDicom.test.js http://localhost:8042
