@@ -22,13 +22,18 @@ export function setup() {
 
     const testData = []
 
-    // make requests to /studies/{id}/shared-tags without If-Modified-Since header
-    // to populate cache
     studyIds.forEach((studyId, index) => {
-        const res = session.get(`/studies/${studyId}/shared-tags`)
+        // count instance in study
+        let res = session.get(`/studies/${studyId}/instances`)
+        const instanceIds = res.json()
+        const instanceCount = instanceIds.length
+        console.log(`Study #${index + 1} ${studyId} has ${instanceCount} instances`)
+
+        // make requests to /studies/{id}/shared-tags without cache control headers to populate cache
+        res = session.get(`/studies/${studyId}/shared-tags`)
 
         const checkOutput = check(res, {
-            'Status is 200 or 304': (r) => [200, 304].includes(r.status),
+            'Status is 200': (r) => r.status === 200,
             'Last-Modified is not empty': (r) => r.headers['Last-Modified'] !== '',
         })
 
@@ -43,16 +48,17 @@ export function setup() {
 
 export default function (data) {
     data.testData.forEach(({ studyId, lastModified }, index) => {
-        // Make call to shared-tags with If-Modified-Since header to current time
+        // Make call to shared-tags with If-Modified-Since header
         const res = session.get(`/studies/${studyId}/shared-tags`, null, {
             headers: {
-                'If-Modified-Since': new Date().toUTCString(),
+                'If-Modified-Since': lastModified
             }
         })
 
         // check status code is 200 or 304
+        // depending if we test against a server with or without client side caching
         const checkOutput = check(res, {
-            'With If-Modified-Since to current time, status is 200 or 304': (r) => [200, 304].includes(r.status)
+            'Expected status' : (r) => r.status === port === 8042 ? 304 : 200,
         })
 
         // sleep for 1 second
