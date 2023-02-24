@@ -54,6 +54,11 @@ export default function (data) {
             'Status is 200': (r) => r.status === 200,
         })
 
+        // fail if check not passed
+        if (!checkOutput) {
+            fail(`Study #${index + 1} ${studyId} failed`)
+        }
+
         // sleep for 1 second
         sleep(1)
     })

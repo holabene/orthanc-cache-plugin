@@ -25,9 +25,14 @@ export default function (data) {
     files.forEach((file, index) => {
         const res = session.post('/instances', file)
 
-        check(res, {
-            'status is 200': (r) => r.status === 200,
+        const checkOutput = check(res, {
+            'Status is 200': (r) => r.status === 200,
         })
+
+        // fail if check not passed
+        if (!checkOutput) {
+            fail(`Instance #${index + 1} failed`)
+        }
 
         const data = res.json()
         const instanceId = data['ID']

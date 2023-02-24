@@ -25,9 +25,14 @@ export default function (data) {
     data.studyIds.forEach((studyId, index) => {
         const res = session.get(`/studies/${studyId}/shared-tags`)
 
-        check(res, {
-            'status is 200': (r) => r.status === 200,
+        const checkOutput = check(res, {
+            'Status is 200': (r) => r.status === 200,
         })
+
+        // fail if status is not 200
+        if (!checkOutput) {
+            fail('Did not get 200')
+        }
 
         // log study ID and shared tags
         const data = res.json()

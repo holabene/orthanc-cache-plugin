@@ -61,6 +61,11 @@ export default function (data) {
             'Expected status' : (r) => r.status === port === 8042 ? 304 : 200,
         })
 
+        // fail if check not passed
+        if (!checkOutput) {
+            fail(`Study #${index + 1} ${studyId} failed`)
+        }
+
         // sleep for 1 second
         sleep(1)
     })
