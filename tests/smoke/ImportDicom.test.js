@@ -10,9 +10,10 @@ export let options = {
 }
 
 let files = JSON.parse(open('../../.data/test/files.json')).map((file) => open(file, 'b'))
+const port = __ENV.PORT || 8042
 
 const session = new Httpx({
-    baseURL: 'http://orthanc:orthanc@localhost:8042',
+    baseURL: `http://orthanc:orthanc@localhost:${port}`,
 })
 
 export function setup() {
