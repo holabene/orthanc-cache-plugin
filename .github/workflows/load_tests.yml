@@ -31,7 +31,9 @@ jobs:
         run: docker compose up -d
 
       - name: Generate fixtures
-        run: ./tests/fixtures.sh 20 100
+        run: |
+          mkdir -p .data/test
+          ./tests/fixtures.sh 20 100
 
       - name: Run ImportDicom.test.js
         run: |
