@@ -13,6 +13,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Create .data directory
+        run: mkdir -p .data
+
       - name: Install dcmtk
         run: sudo apt-get update && sudo apt-get install -y dcmtk
 
@@ -31,9 +34,7 @@ jobs:
         run: docker compose up -d
 
       - name: Generate fixtures
-        run: |
-          mkdir -p .data/test
-          ./tests/fixtures.sh 20 100
+        run: ./tests/fixtures.sh 20 100
 
       - name: Run ImportDicom.test.js
         run: |
