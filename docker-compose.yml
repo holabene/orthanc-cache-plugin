@@ -9,12 +9,11 @@ services:
       - ./.data/orthanc-cache:/var/lib/orthanc/db
     environment:
       ORTHANC__NAME: "Orthanc With Cache Plugin Enabled"
-
       VERBOSE_ENABLED: "true"
       VERBOSE_STARTUP: "true"
+      ORTHANC__STABLE_AGE: 3
       ORTHANC__PYTHON_SCRIPT: "/tmp/example.py"
       ORTHANC__PYTHON_VERBOSE: "true"
-      ORTHANC__STABLE_AGE: 3
   orthanc:
     image: osimis/orthanc
     ports:
@@ -23,3 +22,6 @@ services:
       - ./.data/orthanc:/var/lib/orthanc/db
     environment:
       ORTHANC__NAME: "orthanc"
+      VERBOSE_ENABLED: "true"
+      VERBOSE_STARTUP: "true"
+      ORTHANC__STABLE_AGE: 3
