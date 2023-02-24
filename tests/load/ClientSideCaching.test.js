@@ -16,8 +16,13 @@ const session = new Httpx({
 export function setup() {
     console.log(`Testing using baseURL: ${session.baseURL}`)
 
+    // Get orthanc name
+    let res = session.get('/system')
+    const orthancName = res.json().Name
+    console.log(`Orthanc name: ${orthancName}`)
 
-    const res = session.get('/studies')
+    // Get list of studies
+    res = session.get('/studies')
     studyIds = res.json()
 
     const testData = []

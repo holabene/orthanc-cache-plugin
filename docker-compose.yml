@@ -21,7 +21,7 @@ services:
     volumes:
       - ./.data/orthanc:/var/lib/orthanc/db
     environment:
-      ORTHANC__NAME: "orthanc"
+      ORTHANC__NAME: "Orthanc"
       VERBOSE_ENABLED: "true"
       VERBOSE_STARTUP: "true"
       ORTHANC__STABLE_AGE: 3
