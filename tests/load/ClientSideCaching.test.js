@@ -7,7 +7,7 @@ export let options = {
 }
 
 let studyIds = []
-let port = __ENV.PORT || 8042
+const port = __ENV.PORT || 8042
 
 const session = new Httpx({
     baseURL: `http://orthanc:orthanc@localhost:${port}`,
