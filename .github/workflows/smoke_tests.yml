@@ -16,15 +16,6 @@ jobs:
       - name: Install dcmtk
         run: sudo apt-get update && sudo apt-get install -y dcmtk
 
-      - name: Generate fixtures
-        run: ./tests/fixtures.sh 2 5
-
-      - name: Build orthanc-cache image
-        run: docker compose build orthanc-cache
-
-      - name: Start services
-        run: docker compose up -d
-
       - name: Install k6
         run: |
           sudo mkdir -p /root/.gnupg
@@ -33,20 +24,23 @@ jobs:
           sudo apt-get update
           sudo apt-get install k6
 
-        shell: bash
+      - name: Build orthanc-cache image
+        run: docker compose build orthanc-cache
+
+      - name: Start services
+        run: docker compose up -d orthanc-cache
+
+      - name: Generate fixtures
+        run: ./tests/fixtures.sh 2 5
 
       - name: Run ImportDicom.test.js
-        run: |
-            k6 run tests/smoke/ImportDicom.test.js
-            k6 run tests/smoke/ImportDicom.test.js --env PORT=8043
+        run: k6 run tests/smoke/ImportDicom.test.js
 
       - name: Run IfModifiedSince.test.js
-        run: |
-          k6 run tests/smoke/IfModifiedSince.test.js
+        run: k6 run tests/smoke/IfModifiedSince.test.js
 
       - name: Run IfNoneMatch.test.js
-        run: |
-          k6 run tests/smoke/IfNoneMatch.test.js
+        run: k6 run tests/smoke/IfNoneMatch.test.js
 
       - name: Stop services
         run: docker-compose down

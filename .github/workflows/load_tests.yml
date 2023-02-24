@@ -16,15 +16,6 @@ jobs:
       - name: Install dcmtk
         run: sudo apt-get update && sudo apt-get install -y dcmtk
 
-      - name: Generate fixtures
-        run: ./tests/fixtures.sh 20 100
-
-      - name: Build orthanc-cache image
-        run: docker compose build orthanc-cache
-
-      - name: Start services
-        run: docker compose up -d
-
       - name: Install k6
         run: |
           sudo mkdir -p /root/.gnupg
@@ -32,7 +23,15 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
           sudo apt-get update
           sudo apt-get install k6
-        shell: bash
+
+      - name: Build orthanc-cache image
+        run: docker compose build orthanc-cache
+
+      - name: Start services
+        run: docker compose up -d
+
+      - name: Generate fixtures
+        run: ./tests/fixtures.sh 20 100
 
       - name: Run ImportDicom.test.js
         run: |
