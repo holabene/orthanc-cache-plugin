@@ -46,10 +46,15 @@ jobs:
           k6 run tests/load/ServerSideCaching.test.js
           k6 run tests/load/ServerSideCaching.test.js --env PORT=8043
 
-      - name: Run ClientSideCaching tests
+      - name: Run ClientSideCaching.test.js with If-Modified-Since
         run: |
           k6 run tests/load/ClientSideCaching.test.js
           k6 run tests/load/ClientSideCaching.test.js --env PORT=8043
+
+      - name: Run ClientSideCaching.test.js with If-None-Match
+        run: |
+          k6 run tests/load/ClientSideCaching.test.js --env USE_ETAG=true
+          k6 run tests/load/ClientSideCaching.test.js --env PORT=8043 --env USE_ETAG=true
 
       - name: Stop services
         run: docker-compose down
