@@ -1,4 +1,6 @@
 import json
+import re
+
 import orthanc
 import hashlib
 import urllib.parse
@@ -178,13 +180,8 @@ def rest_callback(output, uri, **request):
         output.SendMethodNotAllowed()
         return None
 
-    # If request['groups'] is a tuple of 2 elements
-    if len(request['groups']) == 2:
-        level, uuid = request['groups']
-    # If request['groups'] is a tuple of 1 element
-    else:
-        level = "instances"
-        uuid = request['groups'][0]
+    # Parse uri for resource level and uuid using regex
+    level, uuid = re.match(r'^/([a-z]+)/([0-9a-f-]+)', uri).groups()
 
     # Get last update metadata from resource
     # If resource not found, return 404
