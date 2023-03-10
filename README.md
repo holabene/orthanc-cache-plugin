@@ -1,6 +1,10 @@
 Orthanc Cache Plugin
 ====================
 
+![PyPI](https://img.shields.io/pypi/v/orthanc-cache-plugin)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/orthanc-cache-plugin)
+![PyPI - License](https://img.shields.io/pypi/l/orthanc-cache-plugin)
+
 This is a python plugin for Orthanc to enable caching of responses and provide 
 HTTP cache control headers to the REST API
 
