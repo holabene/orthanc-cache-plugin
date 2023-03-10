@@ -1,18 +1,20 @@
 services:
   orthanc-cache:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     ports:
       - "8042:8042"
     volumes:
       - ./orthanc_cache_plugin:/usr/share/orthanc/plugins/orthanc_cache_plugin
-      - ./example.py:/tmp/example.py
+      - ./enable_cache_plugin_dev.py:/tmp/enable_cache_plugin_dev.py
       - ./.data/orthanc-cache:/var/lib/orthanc/db
     environment:
-      ORTHANC__NAME: "Orthanc With Cache Plugin Enabled"
+      ORTHANC__NAME: "Orthanc With Cache Plugin (DEV)"
       VERBOSE_ENABLED: "true"
       VERBOSE_STARTUP: "true"
       ORTHANC__STABLE_AGE: 3
-      ORTHANC__PYTHON_SCRIPT: "/tmp/example.py"
+      ORTHANC__PYTHON_SCRIPT: "/tmp/enable_cache_plugin_dev.py"
       ORTHANC__PYTHON_VERBOSE: "true"
   orthanc:
     image: osimis/orthanc
@@ -25,3 +27,19 @@ services:
       VERBOSE_ENABLED: "true"
       VERBOSE_STARTUP: "true"
       ORTHANC__STABLE_AGE: 3
+  orthanc-cache-latest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8044:8042"
+    volumes:
+      - ./enable_cache_plugin.py:/tmp/enable_cache_plugin.py
+      - ./.data/orthanc-cache-latest:/var/lib/orthanc/db
+    environment:
+      ORTHANC__NAME: "Orthanc With Cache Plugin"
+      VERBOSE_ENABLED: "true"
+      VERBOSE_STARTUP: "true"
+      ORTHANC__STABLE_AGE: 3
+      ORTHANC__PYTHON_SCRIPT: "/tmp/enable_cache_plugin.py"
+      ORTHANC__PYTHON_VERBOSE: "true"
