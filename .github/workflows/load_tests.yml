@@ -2,8 +2,8 @@ name: Load tests
 
 on:
   push:
-    branches:
-      - master
+    # any branch
+    branches: '*'
 
 jobs:
   test:

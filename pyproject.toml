@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "orthanc-cache-plugin"
+version = "0.0.1"
+description = "A plugin for Orthanc DICOM server to cache API responses"
+authors = ["Benedict Panggabean <holabenedict@gmail.com>"]
+license = "AGPL-3.0"
+readme = "README.md"
+packages = [{include = "orthanc_cache_plugin"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pytz = "^2022.7.1"
+diskcache = "^5.4.0"
+
+
+[tool.poetry.group.dev.dependencies]
+twine = "^4.0.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

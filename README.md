@@ -1,6 +1,10 @@
 Orthanc Cache Plugin
 ====================
 
+![PyPI](https://img.shields.io/pypi/v/orthanc-cache-plugin)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/orthanc-cache-plugin)
+![PyPI - License](https://img.shields.io/pypi/l/orthanc-cache-plugin)
+
 This is a python plugin for Orthanc to enable caching of responses and provide 
 HTTP cache control headers to the REST API
 
@@ -55,23 +59,19 @@ resource, it will be served from the cache.
 
 ## Installation
 
-There are python requirements for the plugin. Here is an example Dockerfile for a docker image
-with the plugin's requirements.
+Here is an example Dockerfile to install the plugin in an Orthanc docker image.
+You need to have Orthanc Python plugin enabled in your Orthanc docker image.
 
-```
+```Dockerfile
 FROM osimis/orthanc
 
-RUN pip install pytz
-RUN pip install diskcache
+RUN pip install orthanc-cache-plugin
 ```
 
 To enable the plugin, add the following to the script that is configured as the
-Python startup script in Orthanc. See [example.py](example.py) in the root of this repository.
+Python startup script in Orthanc. See [enable_cache_plugin.py](https://github.com/holabene/orthanc-cache-plugin/blob/master/enable_cache_plugin.py) in the root of this repository.
 
-```
-import sys
-sys.path.append('/usr/share/orthanc/plugins/')
-
+```python
 from orthanc_cache_plugin import enable_cache_plugin
 
 enable_cache_plugin()
@@ -112,4 +112,4 @@ GET /instances/{id}/tags
 
 ## Orthanc module API
 
-See documentation at [/docs/orthanc-module-api.md](/docs/orthanc-module-api.md)
+See documentation at [/docs/orthanc-module-api.md](https://github.com/holabene/orthanc-cache-plugin/blob/master/docs/orthanc-module-api.md)

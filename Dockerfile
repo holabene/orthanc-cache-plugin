@@ -1,4 +1,3 @@
 FROM osimis/orthanc
 
-RUN pip install pytz
-RUN pip install diskcache
+RUN pip install orthanc-cache-plugin
